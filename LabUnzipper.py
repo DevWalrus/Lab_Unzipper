@@ -29,6 +29,8 @@ def setup():
 	zip_s.add_argument("-r", "--remove", 
 		help="remove the zip file holding the student zips (passing with no file passed in will do nothing)",
 		action="store_true")
+	zip_s.add_argument("-l", "--lab",
+		help="Provide a name for overarching directory of student submissions (Some common examples are \"Lab\\ 01\" or \"In-Lab\\ 09\"")
 
 	dir_s  = sub.add_parser("directory", aliases=['dir'], parents=[verbose],
 		help="extract using a subdirectory of the student's zips")
@@ -57,19 +59,23 @@ def main(argv, ver):
 	calling_path = os.getcwd()
 	if argv.mode == 'zip':
 		if os.path.exists(os.path.join(calling_path, argv.file)):
+			if argv.lab is not None:
+				lab_dir = argv.lab
+			else:
+				lab_dir = argv.file[2:-4]
 			with zp(argv.file, 'r') as uzip:
 				if uzip.testzip() is not None:
 					print(argv.file + 'is corrupted, please try downloading it again')
 					print('Exiting...')
 					exit(0)
-				if uver:
-					print('Extracting ' + argv.file + ' now...')
-				zip.extractall(argv.file[2:-4])
+				if ver:
+					print('Extracting ' + argv.file + ' to ' + lab_dir + ' now...')
+				uzip.extractall(lab_dir)
 			if argv.remove:
-					if ver:
-						print("Removing the original Zip")
-					os.remove(argv.file)
-			os.chdir(os.path.join(calling_path, argv.file[2:-4]))
+				if ver:
+					print("Removing the original Zip")
+				os.remove(argv.file)
+			os.chdir(os.path.join(calling_path, lab_dir))
 		else:
 			print(argv.file + ' was not found.')
 			print('Exiting...')
@@ -137,8 +143,8 @@ def rm_macosx(path):
 if __name__ == '__main__':
 	argv = setup()
 	if argv.mode == 'dir' or argv.mode == 'directory':
-		argv.directory = argv.directory[:-1]	# For some reason an extra " is 
-												# appended to the end of the 
+		argv.directory = argv.directory[:-1]	# For some reason an extra " is
+												# appended to the end of the
 												# directory name, so I just have
 												# to remove it
 	print(argv)
