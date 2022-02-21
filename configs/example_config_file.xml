@@ -1,0 +1,11 @@
+<component>
+	<MAIN_CLASS_NAME value="rit.stu.abcd" />
+	<config type="default" name="default_no_input" />
+	<config type="param" name="param_input">
+		<PROGRAM_PARAMETERS value="" />
+	</config>
+	<config type="input" name="redir_input">
+		<PROGRAM_PARAMETERS value="" />
+		<INPUT_FILE value="./input.txt" />
+	</config>
+</component>
