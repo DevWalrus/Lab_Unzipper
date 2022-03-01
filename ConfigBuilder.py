@@ -5,10 +5,9 @@ import re
 import shutil
 import xml.dom.minidom as md
 
-from CreateTests import set_test_global, create_stu_tests
+from CreateTests import _setup_test_templates, create_stu_tests, create_broken_tests
 from utils import verbose_print, vverbose_print, set_verbosity
 
-DEFAULT_CONFIG_TEMPLATE, INPUT_CONFIG_TEMPLATE, PARAM_CONFIG_TEMPLATE = "", "", ""
 TEMPLATE_DICT = {}
 
 def _test_create_file(_dir):
@@ -27,8 +26,9 @@ def setup():
     default.add_argument('-t', '--tests',
                          help="An optional folder holding some Junit tests to replace the students with. (This " +
                               "ensures they are not modifying the tests to pass)")
-    default.add_argument('-i', '--iml',
-                         help='An IML file used to setup the modules. The path used will be {working_dir}\\{iml}')
+    default.add_argument('--broken', action="store_true",
+                         help="If tests are provided, and you pass this argument, the program will try to parse the " +
+                         "tests and create different configs for every test")
     default.add_argument("--defaults",
                          help="The directory of the defaults, and templates folders")
     default.add_argument("-v", "--verbose", action="count", default=0,
@@ -36,9 +36,6 @@ def setup():
     return default.parse_args()
 
 def _setup_templates(defaults_path : str):
-    global DEFAULT_CONFIG_TEMPLATE
-    global INPUT_CONFIG_TEMPLATE
-    global PARAM_CONFIG_TEMPLATE
     global TEMPLATE_DICT
 
     templates_path = os.path.join(defaults_path, "./templates/")
@@ -46,10 +43,7 @@ def _setup_templates(defaults_path : str):
         _dir = os.path.join(templates_path, f"./{file}_config_template.xml")
         with open(_dir, 'r') as f:
             TEMPLATE_DICT[file] = f.read()
-
-    test_dir = os.path.join(templates_path, "./test_config_template.xml")
-    with open(test_dir, 'r') as f:
-        set_test_global(f.read())
+    _setup_test_templates(defaults_path)
 
 def add_stu_to_module(xml: md.Document, module_element : md.Node.ELEMENT_NODE, stu_dir : str) -> int:
     new_module = xml.createElement("module")
@@ -69,7 +63,6 @@ def create_stu_iml(iml_path, s_dir, working_dir=os.getcwd()):
 def main(argv):
     calling_dir = os.getcwd()       # Grab the current directory
     working_dir = calling_dir       # Initialize the working dir to the current dir
-    test_files = []
     test_dirs = []
     if argv.tests is not None:
         tests_path = os.path.join(calling_dir, argv.tests)
@@ -122,7 +115,10 @@ def main(argv):
 
     for s_dir in stu_dirs:
         if argv.tests is not None:
-            create_stu_tests(s_dir, test_dirs, configurations_dir)
+            if argv.broken:
+                create_broken_tests(s_dir, test_dirs, configurations_dir)
+            else:
+                create_stu_tests(s_dir, test_dirs, configurations_dir)
 
         # Add to the modules.xml
         if add_stu_to_module(modules_xml, modules_element, s_dir) == 0:
@@ -139,21 +135,23 @@ def main(argv):
         # Create the configs
         for config in configs:
             c_type = config.getAttribute("type")
+            input_dir=""
             if c_type == "input":
                 input_dir = config.getElementsByTagName("INPUT_FILE")[0].getAttribute("value")
-            if c_type == "param" or "input":
+            param=""
+            if c_type == "param" or c_type == "input":
                 param = config.getElementsByTagName("PROGRAM_PARAMETERS")[0].getAttribute("value")
 
             name = s_dir.split(', ')
             config_name = s_dir + "_" + config.getAttribute("name")
-            file_name = name[1][0] + name[0][0] + config.getAttribute("name") + '.xml'
+            file_name = "".join(re.findall("[a-zA-Z]", name[0])) + config.getAttribute("name") + '.xml'
             config = TEMPLATE_DICT[c_type].format(
                 config_name=config_name,
                 class_name=class_name,
                 module_name=s_dir,
                 folder_name=s_dir,
-                param="" if (c_type != "input" or "param") else param,
-                input_dir="" if c_type != "input" else input_dir,
+                param=param,
+                input_dir=input_dir,
             )
             with open(os.path.join(configurations_dir, file_name), 'w') as config_xml_path:
                 config_xml_path.write(config)

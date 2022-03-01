@@ -62,7 +62,9 @@ def main(argv, ver):
 			if argv.lab is not None:
 				lab_dir = argv.lab
 			else:
-				lab_dir = argv.file[2:-4]
+				begin = str(argv.file).find("-") + 1
+				end = str(argv.file).find(" D")
+				lab_dir = argv.file[begin:end]
 			with zp(argv.file, 'r') as uzip:
 				if uzip.testzip() is not None:
 					print(argv.file + 'is corrupted, please try downloading it again')

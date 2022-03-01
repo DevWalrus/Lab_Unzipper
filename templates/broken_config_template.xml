@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="{last_name}.{main_test}.{sub_test}" type="JUnit" factoryName="JUnit" folderName="{folder_name}">
+        <module name="{module_name}" />
+        <option name="MAIN_CLASS_NAME" value="{tests_dir}{main_test}" />
+        <extension name="coverage">
+            <pattern>
+                <option name="PATTERN" value="{tests_dir}*" />
+                <option name="ENABLED" value="true" />
+              </pattern>
+          </extension>
+        <option name="PACKAGE_NAME" value="{package_name}" />
+        <option name="METHOD_NAME" value="{sub_test}" />
+        <option name="TEST_OBJECT" value="class" />
+        <method v="2">
+            <option name="Make" enabled="true" />
+        </method>
+    </configuration>
+</component>
