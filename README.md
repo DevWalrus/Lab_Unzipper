@@ -18,7 +18,8 @@ is complete, the both do the same thing.
 
 |Optional Args|Description|
 |------------------|:-----------------------------------------------------------------------------------------------------:|
-|-v|Changes the Verbosity to output more diagnostic information|
+|-v|Changes the verbosity to output more diagnostic information|
+|-l|Changes the output directory's label (name)|
 |   MyCourses ZIP  |                                The .zip file downloaded from MyCourses                                |
 |  Student's Zips  |                   The Collection of Zipped Files initially inside the MyCourses Zip                   |
 
